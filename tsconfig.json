@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+      "baseUrl": ".",
+      "paths": {
+        "@/*": ["./src/*"]
+      },
+      "allowJs": true,
+      "checkJs": false,
+      "noEmit": true,
+      "skipLibCheck": true,
+      "resolveJsonModule": true,
+      "esModuleInterop": true,
+      "module": "esnext",
+      "moduleResolution": "node",
+      "target": "esnext",
+      "jsx": "react-jsx"
+    },
+    "include": ["src", "MakemyResume/src/components/ui/textarea.tsx", "MakemyResume/src/components/ui/dropdown-menu.tsx", "MakemyResume/src/components/ui/popover.tsx", "MakemyResume/src/components/ui/alert-dialog.tsx", "src/components/ui/dropdown-menu.tsx/src/components/ui/dropdown-menu.tsx", "src/components/ui/slider.tsx", "service/GlobalApi.js"],
+    "exclude": ["node_modules", "dist", ".cache", "build", "strapi-*/**", "api", "components"]
+  }
+  
