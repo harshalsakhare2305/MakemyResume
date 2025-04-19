@@ -12,10 +12,10 @@ const prompt = "Job Title: {jobTitle} , Depends on job title give me list of sum
 
 function Summery({ enabledNext }) {
     const { resumeInfo, setResumeInfo } = useContext(ResumeInfoContext);
-    const [summery, setSummery] = useState();
+    const [summery, setSummery] = useState('');
     const [loading, setLoading] = useState(false);
     const params = useParams();
-    const [aiGeneratedSummeryList, setAiGenerateSummeryList] = useState();
+    const [aiGeneratedSummeryList, setAiGenerateSummeryList] = useState([]);
 
     useEffect(() => {
         if (summery) {
@@ -28,28 +28,33 @@ function Summery({ enabledNext }) {
 
     const GenerateSummeryFromAI = async () => {
         setLoading(true);
-        const PROMPT = prompt.replace('{jobTitle}', resumeInfo?.jobTitle);
-        console.log("Prompt:", PROMPT);
+        const PROMPT = prompt.replace('{jobTitle}', resumeInfo?.jobTitle || 'Software Engineer');
 
         try {
             const result = await AIChatSession.sendMessage(PROMPT);
-            console.log("AI Response:", result);
-
-            // Check if result.response is already an object or string
             let raw = result.response;
 
-            // If it's a string, parse it as JSON
             if (typeof raw === 'string') {
                 raw = JSON.parse(raw);
             }
 
-            // Now we can safely extract the summaries
             const summariesText = raw?.candidates?.[0]?.content?.parts?.[0]?.text;
 
             if (summariesText) {
-                const summaries = JSON.parse(summariesText);  // This is the stringified array
-                console.log("Parsed summaries:", summaries);
-                setAiGenerateSummeryList(summaries);
+                // First parse the stringified object
+                const parsedText = JSON.parse(summariesText);
+
+                console.log('Parsed AI Response:', parsedText);  // Added logging for debugging
+
+                // Now safely extract the summaries array
+                const summaries = parsedText?.summaries;
+
+                if (Array.isArray(summaries)) {
+                    setAiGenerateSummeryList(summaries);
+                } else {
+                    toast.error("Summaries are not in expected array format.");
+                    console.error("Expected array in 'summaries':", summaries);
+                }
             } else {
                 toast.error("No summaries found in AI response.");
             }
@@ -72,7 +77,6 @@ function Summery({ enabledNext }) {
         };
 
         GlobalApi.UpdateResumeDetail(params?.resumeId, data).then(resp => {
-            console.log(resp);
             enabledNext(true);
             toast("Details updated");
         }).catch(error => {
@@ -106,7 +110,7 @@ function Summery({ enabledNext }) {
                         className="mt-5"
                         required
                         value={summery}
-                        defaultValue={summery ? summery : resumeInfo?.summery}
+                        defaultValue={resumeInfo?.summery}
                         onChange={(e) => setSummery(e.target.value)}
                     />
                     <div className='mt-2 flex justify-end'>
@@ -117,7 +121,7 @@ function Summery({ enabledNext }) {
                 </form>
             </div>
 
-            {aiGeneratedSummeryList && (
+            {Array.isArray(aiGeneratedSummeryList) && aiGeneratedSummeryList.length > 0 && (
                 <div className='my-5'>
                     <h2 className='font-bold text-lg'>Suggestions</h2>
                     {aiGeneratedSummeryList.map((item, index) => (
